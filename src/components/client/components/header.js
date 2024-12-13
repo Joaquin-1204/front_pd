@@ -5,25 +5,25 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../../services/auth'
+import {cartManager} from "../../../services/observer/observer";
 function Header() {
   let navigate = useNavigate()
   let [number, setNumber] = useState(0)
+
+
+
   useEffect(() => {
-    let shouldUpdate = true
-    const getUserCart = () => {
-      const item = localStorage.getItem('number')
-      if (item) {
-        setNumber(parseInt(item))
-      }
-    }
-    if (shouldUpdate) {
-      getUserCart()
-    }
-    window.addEventListener('storage', getUserCart)
+    const updateCartNumber = (cart) => {
+      setNumber(cart);
+    };
+
+    cartManager.subscribe(updateCartNumber);
+
     return () => {
-      shouldUpdate = false;
-    }
-  }, [number])
+      cartManager.unsubscribe(updateCartNumber);
+    };
+  }, []);
+
   const closeSession = () => {
     logout({ navigate })
   }
