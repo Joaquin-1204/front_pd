@@ -1,5 +1,5 @@
 import { Alert, Button, Chip, Grid, IconButton, Snackbar, Stack, Typography } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import detailStyle from './detail.module.css'
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -10,6 +10,8 @@ import { getProductById, getRelatedProducts } from '../../../services/product'
 import { getUserDetails } from '../../../services/auth'
 import { addToCart } from '../../../services/shoppingCart'
 import ProductForm from '../../client/components/productForm'
+import PopularDecorator from "../../../services/Decorator/PropularDecorator";
+import DiscountDecorator from "../../../services/Decorator/DiscountDecorator";
 
 function Detail() {
   const [amountToAdd, setAmount] = useState(1)
@@ -21,6 +23,7 @@ function Detail() {
   const [showProductFeedback, setProductFeedback] = React.useState({ show: false, status: false, infoText: '' })
   const [refresh, setRefresh] = useState(false)
   const [openModal, setOpenModal] = useState(false)
+  const [descuento, setDescuento] = useState("")
   useEffect(() => {
     let shouldUpdate = true
     getUserDetails({ setUserRole })
@@ -31,6 +34,7 @@ function Detail() {
       ]).then(results => {
         const [first, second] = results
         setProduct(first)
+        setDescuento(new DiscountDecorator(first, 20).getDetails())
         setEditProduct(first)
         setRelatedProducts(second)
       })
@@ -54,6 +58,12 @@ function Detail() {
     }
     setProductFeedback({ show: false });
   };
+  const discountedProduct = useMemo(() => {
+    if (product) {
+      return new DiscountDecorator(product, 20).getDetails();
+    }
+    return null;
+  }, [product]);
   return (
     <div className={detailStyle.container}>
       <Grid container spacing={3} pt={1}>
@@ -72,6 +82,11 @@ function Detail() {
             <div className={detailStyle.img_container}>
               <img src={product && product.image} alt='product' className={detailStyle.img} />
             </div>
+
+                <Typography variant="p" fontSize={22} component="p" fontWeight={700}>
+                  {descuento}
+                </Typography>
+
             <div className={detailStyle.info}>
               <Typography variant="span" fontSize={30} component="h2" fontWeight={600}>
                 ${product && product.price.toFixed(2)}
